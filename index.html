@@ -250,6 +250,11 @@
       transition: 0.2s ease;
     }
 
+    details select,
+    details input[type="month"] {
+      min-height: 44px;
+    }
+
     input:focus, select:focus {
       border-color: #818cf8;
       box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.12);
@@ -774,6 +779,48 @@
       width: 100%;
     }
 
+    .filter-dropdown {
+      margin-bottom: 18px;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      background: #fff;
+      overflow: hidden;
+    }
+
+    .filter-dropdown summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      font-weight: 800;
+      color: #0f172a;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      user-select: none;
+    }
+
+    .filter-dropdown summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .filter-dropdown summary::after {
+      content: "▾";
+      font-size: 1rem;
+      color: #64748b;
+      transition: transform 0.2s ease;
+    }
+
+    .filter-dropdown[open] summary::after {
+      transform: rotate(180deg);
+    }
+
+    .filter-dropdown-content {
+      padding: 0 16px 16px;
+      border-top: 1px solid #eef2f7;
+      background: #fafcff;
+    }
+
     .hidden {
       display: none !important;
     }
@@ -899,6 +946,12 @@
     body.mobile-mode .install-note {
       text-align: left;
     }
+    body.mobile-mode .filter-dropdown summary {
+      padding: 16px;
+    }
+    body.mobile-mode .filter-dropdown-content {
+      padding: 0 16px 16px;
+    }
   </style>
 </head>
 <body>
@@ -907,7 +960,7 @@
       <div class="hero-top">
         <div>
           <h1>Personal Budget Tracker</h1>
-          <p>Track income, expenses, savings, custom categories, full monthly budgets, and category budgets with local storage, JSON import/export, offline support, and installable app mode.</p>
+          <p>Track income, expenses, savings, custom categories, full monthly budgets, and category budgets with local storage, offline support, and installable app mode.</p>
         </div>
 
         <div class="hero-actions">
@@ -1055,17 +1108,6 @@
             <div class="category-budget-list" id="categoryBudgetList"></div>
           </div>
         </section>
-
-        <section class="card section">
-          <h2>Data Tools</h2>
-          <div class="actions">
-            <button type="button" class="btn btn-success" id="exportBtn">Export JSON</button>
-            <button type="button" class="btn btn-neutral" id="importBtn">Import JSON</button>
-            <button type="button" class="btn btn-danger" id="clearDataBtn">Clear All Data</button>
-          </div>
-          <input type="file" id="importFile" accept="application/json" class="hidden" />
-          <div class="footer-note">All data is saved locally on your device/browser.</div>
-        </section>
       </aside>
 
       <section class="content">
@@ -1075,28 +1117,33 @@
             <div class="status-chip" id="visibleCountChip">0 Transactions</div>
           </div>
 
-          <div class="toolbar">
-            <div class="field">
-              <label for="filterMonth">Month</label>
-              <input type="month" id="filterMonth" />
+          <details class="filter-dropdown">
+            <summary>Open Filters</summary>
+            <div class="filter-dropdown-content">
+              <div class="toolbar">
+                <div class="field">
+                  <label for="filterMonth">Month</label>
+                  <input type="month" id="filterMonth" />
+                </div>
+                <div class="field">
+                  <label for="filterCategory">Category</label>
+                  <select id="filterCategory"></select>
+                </div>
+                <div class="field">
+                  <label for="filterType">Type</label>
+                  <select id="filterType">
+                    <option value="all">All Types</option>
+                    <option value="income">Income</option>
+                    <option value="expense">Expense</option>
+                  </select>
+                </div>
+                <div class="field" style="flex:0 0 auto;">
+                  <label>&nbsp;</label>
+                  <button type="button" class="btn btn-secondary" id="resetFiltersBtn">Reset Filters</button>
+                </div>
+              </div>
             </div>
-            <div class="field">
-              <label for="filterCategory">Category</label>
-              <select id="filterCategory"></select>
-            </div>
-            <div class="field">
-              <label for="filterType">Type</label>
-              <select id="filterType">
-                <option value="all">All Types</option>
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
-            </div>
-            <div class="field" style="flex:0 0 auto;">
-              <label>&nbsp;</label>
-              <button type="button" class="btn btn-secondary" id="resetFiltersBtn">Reset Filters</button>
-            </div>
-          </div>
+          </details>
         </section>
 
         <section class="card section">
@@ -1140,7 +1187,7 @@
     (() => {
       "use strict";
 
-      const STORAGE_KEY = "budget_tracker_data_v6";
+      const STORAGE_KEY = "budget_tracker_data_v7";
       const MOBILE_MODE_KEY = "budget_tracker_mobile_mode_v1";
 
       const DEFAULT_CATEGORIES = [
@@ -1194,10 +1241,6 @@
         saveCategoryBudgetBtn: document.getElementById("saveCategoryBudgetBtn"),
         clearCategoryBudgetBtn: document.getElementById("clearCategoryBudgetBtn"),
         categoryBudgetList: document.getElementById("categoryBudgetList"),
-        exportBtn: document.getElementById("exportBtn"),
-        importBtn: document.getElementById("importBtn"),
-        importFile: document.getElementById("importFile"),
-        clearDataBtn: document.getElementById("clearDataBtn"),
         filterMonth: document.getElementById("filterMonth"),
         filterCategory: document.getElementById("filterCategory"),
         filterType: document.getElementById("filterType"),
@@ -1269,18 +1312,6 @@
           .replace(/>/g, "&gt;")
           .replace(/"/g, "&quot;")
           .replace(/'/g, "&#039;");
-      }
-
-      function downloadFile(filename, text, mimeType) {
-        const blob = new Blob([text], { type: mimeType });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = filename;
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-        URL.revokeObjectURL(url);
       }
 
       function saveState() {
@@ -1359,9 +1390,7 @@
               result[month][cleanCategory === "Medical" ? "Hygiene" : cleanCategory] = cleanAmount;
             }
           });
-          if (!Object.keys(result[month]).length) {
-            delete result[month];
-          }
+          if (!Object.keys(result[month]).length) delete result[month];
         });
 
         return result;
@@ -1427,10 +1456,7 @@
 
         els.category.innerHTML = options;
         els.categoryBudgetSelect.innerHTML = options;
-
-        els.filterCategory.innerHTML =
-          `<option value="all">All Categories</option>` +
-          options;
+        els.filterCategory.innerHTML = `<option value="all">All Categories</option>` + options;
 
         if (state.categories.includes(currentCategoryValue)) {
           els.category.value = currentCategoryValue;
@@ -1506,11 +1532,6 @@
         els.filterCategory.addEventListener("change", renderAll);
         els.filterType.addEventListener("change", renderAll);
         els.resetFiltersBtn.addEventListener("click", resetFilters);
-
-        els.exportBtn.addEventListener("click", exportData);
-        els.importBtn.addEventListener("click", () => els.importFile.click());
-        els.importFile.addEventListener("change", importData);
-        els.clearDataBtn.addEventListener("click", clearAllData);
 
         els.installBtn.addEventListener("click", triggerInstallPrompt);
       }
@@ -1593,9 +1614,7 @@
         Object.keys(state.categoryBudgets).forEach(month => {
           if (state.categoryBudgets[month]) {
             delete state.categoryBudgets[month][categoryName];
-            if (!Object.keys(state.categoryBudgets[month]).length) {
-              delete state.categoryBudgets[month];
-            }
+            if (!Object.keys(state.categoryBudgets[month]).length) delete state.categoryBudgets[month];
           }
         });
 
@@ -1753,9 +1772,7 @@
         }
 
         delete state.categoryBudgets[month][category];
-        if (!Object.keys(state.categoryBudgets[month]).length) {
-          delete state.categoryBudgets[month];
-        }
+        if (!Object.keys(state.categoryBudgets[month]).length) delete state.categoryBudgets[month];
 
         saveState();
         syncCategoryBudgetInput();
@@ -1780,120 +1797,6 @@
         els.filterMonth.value = getCurrentMonthValue();
         els.filterCategory.value = "all";
         els.filterType.value = "all";
-        renderAll();
-      }
-
-      function exportData() {
-        const payload = {
-          exportedAt: new Date().toISOString(),
-          app: "Budget Tracker",
-          version: 6,
-          currency: "ZAR",
-          data: {
-            transactions: state.transactions,
-            budgets: state.budgets,
-            categoryBudgets: state.categoryBudgets,
-            categories: state.categories
-          }
-        };
-
-        downloadFile(
-          `budget-tracker-export-${getTodayISO()}.json`,
-          JSON.stringify(payload, null, 2),
-          "application/json"
-        );
-      }
-
-      function importData(event) {
-        const file = event.target.files && event.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = e => {
-          try {
-            const parsed = JSON.parse(String(e.target.result || "{}"));
-
-            let importedTransactions = [];
-            let importedBudgets = {};
-            let importedCategoryBudgets = {};
-            let importedCategories = [];
-
-            if (parsed && parsed.data) {
-              importedTransactions = Array.isArray(parsed.data.transactions) ? parsed.data.transactions : [];
-              importedBudgets = normalizeBudgetsMap(parsed.data.budgets);
-              importedCategoryBudgets = normalizeCategoryBudgetsMap(parsed.data.categoryBudgets);
-              importedCategories = Array.isArray(parsed.data.categories) ? parsed.data.categories : [];
-            } else {
-              importedTransactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
-              importedBudgets = normalizeBudgetsMap(parsed.budgets);
-              importedCategoryBudgets = normalizeCategoryBudgetsMap(parsed.categoryBudgets);
-              importedCategories = Array.isArray(parsed.categories) ? parsed.categories : [];
-            }
-
-            const normalizedTransactions = importedTransactions.map(normalizeTransaction).filter(Boolean);
-
-            if (!normalizedTransactions.length &&
-                !Object.keys(importedBudgets).length &&
-                !Object.keys(importedCategoryBudgets).length &&
-                !importedCategories.length) {
-              throw new Error("No valid budget tracker data found.");
-            }
-
-            const ok = confirm("Importing data will replace your current saved data. Continue?");
-            if (!ok) return;
-
-            state.transactions = normalizedTransactions;
-            state.budgets = importedBudgets;
-            state.categoryBudgets = importedCategoryBudgets;
-            state.categories = normalizeCategories([
-              ...importedCategories,
-              ...normalizedTransactions.map(tx => tx.category),
-              ...Object.values(importedCategoryBudgets).flatMap(monthMap => Object.keys(monthMap || {}))
-            ]);
-            state.editingId = null;
-
-            ensureTransactionCategoriesExist();
-            saveState();
-            cancelEdit();
-            populateCategorySelects();
-            renderCategoryManager();
-            syncBudgetInputWithSavedValue();
-            syncCategoryBudgetInput();
-            renderAll();
-            alert("Data imported successfully.");
-          } catch (err) {
-            alert("Import failed. Please choose a valid JSON export file.");
-            console.error(err);
-          } finally {
-            els.importFile.value = "";
-          }
-        };
-
-        reader.readAsText(file);
-      }
-
-      function clearAllData() {
-        const ok = confirm("This will permanently remove all transactions, categories, and budget settings from this device/browser. Continue?");
-        if (!ok) return;
-
-        const really = confirm("Are you absolutely sure you want to clear all data?");
-        if (!really) return;
-
-        state = {
-          transactions: [],
-          budgets: {},
-          categoryBudgets: {},
-          categories: [...DEFAULT_CATEGORIES],
-          editingId: null
-        };
-
-        saveState();
-        cancelEdit();
-        setDefaults();
-        populateCategorySelects();
-        renderCategoryManager();
-        syncBudgetInputWithSavedValue();
-        syncCategoryBudgetInput();
         renderAll();
       }
 
@@ -1952,13 +1855,7 @@
           const remaining = target - used;
           const percent = target > 0 ? (used / target) * 100 : 0;
 
-          return {
-            category,
-            target,
-            used,
-            remaining,
-            percent
-          };
+          return { category, target, used, remaining, percent };
         });
 
         return items.sort((a, b) => a.category.localeCompare(b.category));
