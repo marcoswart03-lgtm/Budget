@@ -171,10 +171,11 @@
     .expense-color { color: var(--expense); }
     .balance-color { color: var(--balance); }
     .savings-color { color: var(--warning); }
+    .warning-color { color: var(--warning); }
 
     .main-grid {
       display: grid;
-      grid-template-columns: 380px 1fr;
+      grid-template-columns: 400px 1fr;
       gap: 24px;
       align-items: start;
       margin-top: 24px;
@@ -189,10 +190,18 @@
       padding: 20px;
     }
 
-    .section h2 {
+    .section h2,
+    .section h3 {
       margin: 0 0 16px;
       font-size: 1.1rem;
       letter-spacing: -0.01em;
+    }
+
+    .subheading {
+      margin: 6px 0 10px;
+      font-size: 0.95rem;
+      font-weight: 800;
+      color: #334155;
     }
 
     .form-grid {
@@ -386,6 +395,87 @@
       background: #fef2f2;
       color: #b91c1c;
       border: 1px solid #fecaca;
+    }
+
+    .budget-divider {
+      height: 1px;
+      background: #e5e7eb;
+      margin: 4px 0;
+    }
+
+    .category-budget-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .category-budget-card {
+      background: #fff;
+      border: 1px solid #e5e7eb;
+      border-radius: 16px;
+      padding: 14px;
+    }
+
+    .category-budget-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 10px;
+    }
+
+    .category-budget-name {
+      font-weight: 800;
+      color: #0f172a;
+    }
+
+    .category-budget-meta {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .category-budget-meta .item {
+      background: var(--surface);
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      padding: 10px;
+    }
+
+    .category-budget-meta .item .k {
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .category-budget-meta .item .v {
+      font-weight: 800;
+      font-size: 0.92rem;
+    }
+
+    .small-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-top: 10px;
+    }
+
+    .small-btn {
+      border: 1px solid #e2e8f0;
+      background: white;
+      border-radius: 10px;
+      padding: 8px 10px;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 38px;
+    }
+
+    .small-btn:hover {
+      background: #f8fafc;
+    }
+
+    .small-btn.danger {
+      color: var(--danger);
     }
 
     .chart-area {
@@ -701,7 +791,7 @@
       .app { padding: 16px; }
       .hero { padding: 22px; }
       .summary-grid { grid-template-columns: 1fr; }
-      .row-2, .budget-stats, .category-add-row { grid-template-columns: 1fr; }
+      .row-2, .budget-stats, .category-add-row, .category-budget-meta { grid-template-columns: 1fr; }
       .chart-row { grid-template-columns: 1fr; }
       .chart-value { justify-self: start; }
       .actions { flex-direction: column; }
@@ -713,6 +803,7 @@
       .status-line { align-items: flex-start; }
       .hero-actions { width: 100%; }
       .hero-badge { width: 100%; text-align: center; }
+      .category-budget-head { flex-direction: column; align-items: stretch; }
     }
 
     body.mobile-mode .app {
@@ -729,7 +820,8 @@
     body.mobile-mode .hero-top,
     body.mobile-mode .status-line,
     body.mobile-mode .tx-card-top,
-    body.mobile-mode .tx-card-bottom {
+    body.mobile-mode .tx-card-bottom,
+    body.mobile-mode .category-budget-head {
       flex-direction: column;
       align-items: stretch;
     }
@@ -749,7 +841,8 @@
     body.mobile-mode .row-2,
     body.mobile-mode .budget-stats,
     body.mobile-mode .category-add-row,
-    body.mobile-mode .chart-row {
+    body.mobile-mode .chart-row,
+    body.mobile-mode .category-budget-meta {
       grid-template-columns: 1fr;
     }
 
@@ -814,7 +907,7 @@
       <div class="hero-top">
         <div>
           <h1>Personal Budget Tracker</h1>
-          <p>Track income, expenses, savings, budgets, custom categories, and monthly spending with local storage, JSON import/export, offline support, and installable app mode.</p>
+          <p>Track income, expenses, savings, custom categories, full monthly budgets, and category budgets with local storage, JSON import/export, offline support, and installable app mode.</p>
         </div>
 
         <div class="hero-actions">
@@ -903,18 +996,20 @@
         </section>
 
         <section class="card section">
-          <h2>Monthly Budget</h2>
+          <h2>Monthly Budgets</h2>
           <div class="budget-box">
             <div>
               <label for="budgetMonth">Budget Month</label>
               <input type="month" id="budgetMonth" />
             </div>
+
             <div>
-              <label for="budgetLimit">Budget Limit (R)</label>
-              <input type="number" id="budgetLimit" min="0" step="0.01" placeholder="Enter monthly budget target" />
+              <label for="budgetLimit">Full Monthly Budget (R)</label>
+              <input type="number" id="budgetLimit" min="0" step="0.01" placeholder="Enter full monthly budget" />
             </div>
+
             <div class="actions">
-              <button type="button" class="btn btn-primary" id="saveBudgetBtn">Save Budget</button>
+              <button type="button" class="btn btn-primary" id="saveBudgetBtn">Save Full Budget</button>
             </div>
 
             <div class="budget-stats">
@@ -936,6 +1031,28 @@
               <div class="budget-bar" id="budgetBar"></div>
             </div>
             <div id="budgetAlert" class="budget-alert"></div>
+
+            <div class="budget-divider"></div>
+
+            <div class="subheading">Category Budgets</div>
+
+            <div class="row-2">
+              <div>
+                <label for="categoryBudgetSelect">Category</label>
+                <select id="categoryBudgetSelect"></select>
+              </div>
+              <div>
+                <label for="categoryBudgetAmount">Category Budget (R)</label>
+                <input type="number" id="categoryBudgetAmount" min="0" step="0.01" placeholder="Enter category budget" />
+              </div>
+            </div>
+
+            <div class="actions">
+              <button type="button" class="btn btn-primary" id="saveCategoryBudgetBtn">Save Category Budget</button>
+              <button type="button" class="btn btn-neutral" id="clearCategoryBudgetBtn">Remove Category Budget</button>
+            </div>
+
+            <div class="category-budget-list" id="categoryBudgetList"></div>
           </div>
         </section>
 
@@ -1023,7 +1140,7 @@
     (() => {
       "use strict";
 
-      const STORAGE_KEY = "budget_tracker_data_v5";
+      const STORAGE_KEY = "budget_tracker_data_v6";
       const MOBILE_MODE_KEY = "budget_tracker_mobile_mode_v1";
 
       const DEFAULT_CATEGORIES = [
@@ -1041,6 +1158,7 @@
       let state = {
         transactions: [],
         budgets: {},
+        categoryBudgets: {},
         categories: [...DEFAULT_CATEGORIES],
         editingId: null
       };
@@ -1071,6 +1189,11 @@
         budgetTarget: document.getElementById("budgetTarget"),
         budgetBar: document.getElementById("budgetBar"),
         budgetAlert: document.getElementById("budgetAlert"),
+        categoryBudgetSelect: document.getElementById("categoryBudgetSelect"),
+        categoryBudgetAmount: document.getElementById("categoryBudgetAmount"),
+        saveCategoryBudgetBtn: document.getElementById("saveCategoryBudgetBtn"),
+        clearCategoryBudgetBtn: document.getElementById("clearCategoryBudgetBtn"),
+        categoryBudgetList: document.getElementById("categoryBudgetList"),
         exportBtn: document.getElementById("exportBtn"),
         importBtn: document.getElementById("importBtn"),
         importFile: document.getElementById("importFile"),
@@ -1187,11 +1310,7 @@
         const cleaned = [...DEFAULT_CATEGORIES, ...merged]
           .map(sanitizeCategoryName)
           .filter(Boolean)
-          .map(cat => {
-            const lower = cat.toLowerCase();
-            if (lower === "medical") return "Hygiene";
-            return cat;
-          })
+          .map(cat => cat.toLowerCase() === "medical" ? "Hygiene" : cat)
           .filter(cat => cat.toLowerCase() !== "rent" && cat.toLowerCase() !== "other")
           .filter((cat, index, arr) =>
             arr.findIndex(item => item.toLowerCase() === cat.toLowerCase()) === index
@@ -1221,12 +1340,40 @@
         return normalized;
       }
 
+      function normalizeBudgetsMap(obj) {
+        return obj && typeof obj === "object" ? obj : {};
+      }
+
+      function normalizeCategoryBudgetsMap(obj) {
+        const source = obj && typeof obj === "object" ? obj : {};
+        const result = {};
+
+        Object.entries(source).forEach(([month, monthMap]) => {
+          if (!monthMap || typeof monthMap !== "object") return;
+          result[month] = {};
+          Object.entries(monthMap).forEach(([category, amount]) => {
+            const cleanCategory = sanitizeCategoryName(category);
+            if (!cleanCategory) return;
+            const cleanAmount = safeNumber(amount);
+            if (cleanAmount > 0) {
+              result[month][cleanCategory === "Medical" ? "Hygiene" : cleanCategory] = cleanAmount;
+            }
+          });
+          if (!Object.keys(result[month]).length) {
+            delete result[month];
+          }
+        });
+
+        return result;
+      }
+
       function loadState() {
         const raw = localStorage.getItem(STORAGE_KEY);
         if (!raw) {
           state = {
             transactions: [],
             budgets: {},
+            categoryBudgets: {},
             categories: [...DEFAULT_CATEGORIES],
             editingId: null
           };
@@ -1239,7 +1386,8 @@
           state.transactions = Array.isArray(parsed.transactions)
             ? parsed.transactions.map(normalizeTransaction).filter(Boolean)
             : [];
-          state.budgets = parsed && typeof parsed.budgets === "object" && parsed.budgets ? parsed.budgets : {};
+          state.budgets = normalizeBudgetsMap(parsed.budgets);
+          state.categoryBudgets = normalizeCategoryBudgetsMap(parsed.categoryBudgets);
           state.categories = normalizeCategories(parsed.categories);
           state.editingId = null;
           ensureTransactionCategoriesExist();
@@ -1249,6 +1397,7 @@
           state = {
             transactions: [],
             budgets: {},
+            categoryBudgets: {},
             categories: [...DEFAULT_CATEGORIES],
             editingId: null
           };
@@ -1258,25 +1407,41 @@
 
       function ensureTransactionCategoriesExist() {
         const transactionCategories = state.transactions.map(tx => tx.category).filter(Boolean);
-        state.categories = normalizeCategories([...state.categories, ...transactionCategories]);
+        const budgetCategories = [];
+
+        Object.values(state.categoryBudgets).forEach(monthMap => {
+          Object.keys(monthMap || {}).forEach(cat => budgetCategories.push(cat));
+        });
+
+        state.categories = normalizeCategories([...state.categories, ...transactionCategories, ...budgetCategories]);
       }
 
       function populateCategorySelects() {
         const currentCategoryValue = els.category.value;
         const currentFilterValue = els.filterCategory.value;
+        const currentBudgetCategory = els.categoryBudgetSelect.value;
 
-        els.category.innerHTML = state.categories
+        const options = state.categories
           .map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`)
           .join("");
 
+        els.category.innerHTML = options;
+        els.categoryBudgetSelect.innerHTML = options;
+
         els.filterCategory.innerHTML =
           `<option value="all">All Categories</option>` +
-          state.categories.map(cat => `<option value="${escapeHtml(cat)}">${escapeHtml(cat)}</option>`).join("");
+          options;
 
         if (state.categories.includes(currentCategoryValue)) {
           els.category.value = currentCategoryValue;
         } else if (state.categories.length) {
           els.category.value = state.categories[0];
+        }
+
+        if (state.categories.includes(currentBudgetCategory)) {
+          els.categoryBudgetSelect.value = currentBudgetCategory;
+        } else if (state.categories.length) {
+          els.categoryBudgetSelect.value = state.categories[0];
         }
 
         if (currentFilterValue === "all" || state.categories.includes(currentFilterValue)) {
@@ -1329,13 +1494,19 @@
         });
 
         els.saveBudgetBtn.addEventListener("click", saveBudget);
+        els.saveCategoryBudgetBtn.addEventListener("click", saveCategoryBudget);
+        els.clearCategoryBudgetBtn.addEventListener("click", clearCategoryBudget);
+        els.budgetMonth.addEventListener("input", () => {
+          syncBudgetInputWithSavedValue();
+          syncCategoryBudgetInput();
+        });
+        els.categoryBudgetSelect.addEventListener("change", syncCategoryBudgetInput);
 
         els.filterMonth.addEventListener("input", renderAll);
         els.filterCategory.addEventListener("change", renderAll);
         els.filterType.addEventListener("change", renderAll);
         els.resetFiltersBtn.addEventListener("click", resetFilters);
 
-        els.budgetMonth.addEventListener("input", syncBudgetInputWithSavedValue);
         els.exportBtn.addEventListener("click", exportData);
         els.importBtn.addEventListener("click", () => els.importFile.click());
         els.importFile.addEventListener("change", importData);
@@ -1395,6 +1566,7 @@
         populateCategorySelects();
         renderCategoryManager();
         els.category.value = state.categories.find(cat => cat.toLowerCase() === lower) || name;
+        els.categoryBudgetSelect.value = state.categories.find(cat => cat.toLowerCase() === lower) || name;
         els.newCategory.value = "";
       }
 
@@ -1417,6 +1589,16 @@
         if (!ok) return;
 
         state.categories = state.categories.filter(cat => cat.toLowerCase() !== categoryName.toLowerCase());
+
+        Object.keys(state.categoryBudgets).forEach(month => {
+          if (state.categoryBudgets[month]) {
+            delete state.categoryBudgets[month][categoryName];
+            if (!Object.keys(state.categoryBudgets[month]).length) {
+              delete state.categoryBudgets[month];
+            }
+          }
+        });
+
         saveState();
         populateCategorySelects();
         renderCategoryManager();
@@ -1506,8 +1688,16 @@
         renderAll();
       }
 
+      function getBudgetMonth() {
+        return els.budgetMonth.value || getCurrentMonthValue();
+      }
+
+      function getMonthCategoryBudget(month, category) {
+        return safeNumber((state.categoryBudgets[month] || {})[category]);
+      }
+
       function saveBudget() {
-        const month = els.budgetMonth.value;
+        const month = getBudgetMonth();
         const limit = safeNumber(els.budgetLimit.value);
 
         if (!month) {
@@ -1525,11 +1715,65 @@
         renderAll();
       }
 
+      function saveCategoryBudget() {
+        const month = getBudgetMonth();
+        const category = sanitizeCategoryName(els.categoryBudgetSelect.value);
+        const amount = safeNumber(els.categoryBudgetAmount.value);
+
+        if (!month) {
+          alert("Please select a budget month.");
+          return;
+        }
+
+        if (!category) {
+          alert("Please choose a category.");
+          return;
+        }
+
+        if (amount <= 0) {
+          alert("Please enter a category budget greater than zero.");
+          return;
+        }
+
+        state.categoryBudgets[month] = state.categoryBudgets[month] || {};
+        state.categoryBudgets[month][category] = amount;
+        saveState();
+        renderAll();
+      }
+
+      function clearCategoryBudget() {
+        const month = getBudgetMonth();
+        const category = sanitizeCategoryName(els.categoryBudgetSelect.value);
+
+        if (!month || !category) return;
+
+        if (!state.categoryBudgets[month] || !(category in state.categoryBudgets[month])) {
+          alert("That category budget does not exist for this month.");
+          return;
+        }
+
+        delete state.categoryBudgets[month][category];
+        if (!Object.keys(state.categoryBudgets[month]).length) {
+          delete state.categoryBudgets[month];
+        }
+
+        saveState();
+        syncCategoryBudgetInput();
+        renderAll();
+      }
+
       function syncBudgetInputWithSavedValue() {
-        const month = els.budgetMonth.value;
+        const month = getBudgetMonth();
         const value = safeNumber(state.budgets[month]);
         els.budgetLimit.value = value ? value.toFixed(2) : "";
         renderBudgetSection();
+      }
+
+      function syncCategoryBudgetInput() {
+        const month = getBudgetMonth();
+        const category = sanitizeCategoryName(els.categoryBudgetSelect.value);
+        const value = getMonthCategoryBudget(month, category);
+        els.categoryBudgetAmount.value = value ? value.toFixed(2) : "";
       }
 
       function resetFilters() {
@@ -1543,11 +1787,12 @@
         const payload = {
           exportedAt: new Date().toISOString(),
           app: "Budget Tracker",
-          version: 5,
+          version: 6,
           currency: "ZAR",
           data: {
             transactions: state.transactions,
             budgets: state.budgets,
+            categoryBudgets: state.categoryBudgets,
             categories: state.categories
           }
         };
@@ -1570,21 +1815,27 @@
 
             let importedTransactions = [];
             let importedBudgets = {};
+            let importedCategoryBudgets = {};
             let importedCategories = [];
 
             if (parsed && parsed.data) {
               importedTransactions = Array.isArray(parsed.data.transactions) ? parsed.data.transactions : [];
-              importedBudgets = typeof parsed.data.budgets === "object" && parsed.data.budgets ? parsed.data.budgets : {};
+              importedBudgets = normalizeBudgetsMap(parsed.data.budgets);
+              importedCategoryBudgets = normalizeCategoryBudgetsMap(parsed.data.categoryBudgets);
               importedCategories = Array.isArray(parsed.data.categories) ? parsed.data.categories : [];
             } else {
               importedTransactions = Array.isArray(parsed.transactions) ? parsed.transactions : [];
-              importedBudgets = typeof parsed.budgets === "object" && parsed.budgets ? parsed.budgets : {};
+              importedBudgets = normalizeBudgetsMap(parsed.budgets);
+              importedCategoryBudgets = normalizeCategoryBudgetsMap(parsed.categoryBudgets);
               importedCategories = Array.isArray(parsed.categories) ? parsed.categories : [];
             }
 
             const normalizedTransactions = importedTransactions.map(normalizeTransaction).filter(Boolean);
 
-            if (!normalizedTransactions.length && Object.keys(importedBudgets).length === 0 && !importedCategories.length) {
+            if (!normalizedTransactions.length &&
+                !Object.keys(importedBudgets).length &&
+                !Object.keys(importedCategoryBudgets).length &&
+                !importedCategories.length) {
               throw new Error("No valid budget tracker data found.");
             }
 
@@ -1593,7 +1844,12 @@
 
             state.transactions = normalizedTransactions;
             state.budgets = importedBudgets;
-            state.categories = normalizeCategories([...importedCategories, ...normalizedTransactions.map(tx => tx.category)]);
+            state.categoryBudgets = importedCategoryBudgets;
+            state.categories = normalizeCategories([
+              ...importedCategories,
+              ...normalizedTransactions.map(tx => tx.category),
+              ...Object.values(importedCategoryBudgets).flatMap(monthMap => Object.keys(monthMap || {}))
+            ]);
             state.editingId = null;
 
             ensureTransactionCategoriesExist();
@@ -1602,6 +1858,7 @@
             populateCategorySelects();
             renderCategoryManager();
             syncBudgetInputWithSavedValue();
+            syncCategoryBudgetInput();
             renderAll();
             alert("Data imported successfully.");
           } catch (err) {
@@ -1625,6 +1882,7 @@
         state = {
           transactions: [],
           budgets: {},
+          categoryBudgets: {},
           categories: [...DEFAULT_CATEGORIES],
           editingId: null
         };
@@ -1635,6 +1893,7 @@
         populateCategorySelects();
         renderCategoryManager();
         syncBudgetInputWithSavedValue();
+        syncCategoryBudgetInput();
         renderAll();
       }
 
@@ -1683,6 +1942,28 @@
         return { budgetTarget, monthExpenses, remaining, percent };
       }
 
+      function getCategoryBudgetOverview(monthValue) {
+        const monthBudgets = state.categoryBudgets[monthValue] || {};
+        const items = Object.entries(monthBudgets).map(([category, target]) => {
+          const used = state.transactions
+            .filter(tx => tx.type === "expense" && tx.category === category && tx.date.slice(0, 7) === monthValue)
+            .reduce((sum, tx) => sum + tx.amount, 0);
+
+          const remaining = target - used;
+          const percent = target > 0 ? (used / target) * 100 : 0;
+
+          return {
+            category,
+            target,
+            used,
+            remaining,
+            percent
+          };
+        });
+
+        return items.sort((a, b) => a.category.localeCompare(b.category));
+      }
+
       function getExpenseBreakdown(transactions) {
         const expenses = transactions.filter(tx => tx.type === "expense");
         const map = new Map();
@@ -1720,7 +2001,7 @@
       }
 
       function renderBudgetSection() {
-        const month = els.budgetMonth.value || getCurrentMonthValue();
+        const month = getBudgetMonth();
         const info = getBudgetInfo(month);
 
         if (document.activeElement !== els.budgetLimit) {
@@ -1737,16 +2018,95 @@
         if (info.percent >= 100 && info.budgetTarget > 0) {
           els.budgetBar.style.background = "linear-gradient(90deg, #ef4444, #dc2626)";
           els.budgetAlert.className = "budget-alert danger";
-          els.budgetAlert.textContent = `Warning: You have exceeded the budget for ${monthNameFromValue(month)} by ${formatCurrency(Math.abs(info.remaining))}.`;
+          els.budgetAlert.textContent = `Warning: You have exceeded the full budget for ${monthNameFromValue(month)} by ${formatCurrency(Math.abs(info.remaining))}.`;
         } else if (info.percent >= 80 && info.budgetTarget > 0) {
           els.budgetBar.style.background = "linear-gradient(90deg, #f59e0b, #fb923c)";
           els.budgetAlert.className = "budget-alert warning";
-          els.budgetAlert.textContent = `Caution: You have used ${info.percent.toFixed(1)}% of your budget for ${monthNameFromValue(month)}.`;
+          els.budgetAlert.textContent = `Caution: You have used ${info.percent.toFixed(1)}% of the full budget for ${monthNameFromValue(month)}.`;
         } else {
           els.budgetBar.style.background = "linear-gradient(90deg, #10b981, #3b82f6)";
           els.budgetAlert.className = "budget-alert";
           els.budgetAlert.textContent = "";
         }
+
+        renderCategoryBudgetList(month);
+      }
+
+      function renderCategoryBudgetList(month) {
+        const overview = getCategoryBudgetOverview(month);
+
+        if (!overview.length) {
+          els.categoryBudgetList.innerHTML = `<div class="inline-note">No category budgets saved for ${monthNameFromValue(month)} yet.</div>`;
+          return;
+        }
+
+        els.categoryBudgetList.innerHTML = overview.map(item => {
+          let statusClass = "balance-color";
+          if (item.percent >= 100) statusClass = "expense-color";
+          else if (item.percent >= 80) statusClass = "warning-color";
+          else statusClass = "income-color";
+
+          const fillColor = item.percent >= 100
+            ? "linear-gradient(90deg, #ef4444, #dc2626)"
+            : item.percent >= 80
+              ? "linear-gradient(90deg, #f59e0b, #fb923c)"
+              : "linear-gradient(90deg, #10b981, #3b82f6)";
+
+          return `
+            <div class="category-budget-card">
+              <div class="category-budget-head">
+                <div class="category-budget-name">${escapeHtml(item.category)}</div>
+                <div class="${statusClass}" style="font-weight:800;">${item.percent.toFixed(1)}% used</div>
+              </div>
+
+              <div class="budget-bar-wrap">
+                <div class="budget-bar" style="width:${Math.min(item.percent, 100)}%; background:${fillColor};"></div>
+              </div>
+
+              <div class="category-budget-meta">
+                <div class="item">
+                  <div class="k">Budget</div>
+                  <div class="v">${formatCurrency(item.target)}</div>
+                </div>
+                <div class="item">
+                  <div class="k">Used</div>
+                  <div class="v ${item.used > 0 ? "expense-color" : ""}">${formatCurrency(item.used)}</div>
+                </div>
+                <div class="item">
+                  <div class="k">Remaining</div>
+                  <div class="v ${item.remaining < 0 ? "expense-color" : "income-color"}">${formatCurrency(item.remaining)}</div>
+                </div>
+              </div>
+
+              <div class="small-actions">
+                <button type="button" class="small-btn" data-category-budget-edit="${escapeHtml(item.category)}">Load Into Form</button>
+                <button type="button" class="small-btn danger" data-category-budget-delete="${escapeHtml(item.category)}">Remove Budget</button>
+              </div>
+            </div>
+          `;
+        }).join("");
+
+        els.categoryBudgetList.querySelectorAll("[data-category-budget-edit]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const category = btn.getAttribute("data-category-budget-edit");
+            els.categoryBudgetSelect.value = category;
+            syncCategoryBudgetInput();
+            window.scrollTo({ top: 0, behavior: "smooth" });
+          });
+        });
+
+        els.categoryBudgetList.querySelectorAll("[data-category-budget-delete]").forEach(btn => {
+          btn.addEventListener("click", () => {
+            const category = btn.getAttribute("data-category-budget-delete");
+            const ok = confirm(`Remove the ${category} budget for ${monthNameFromValue(month)}?`);
+            if (!ok) return;
+            delete state.categoryBudgets[month][category];
+            if (!Object.keys(state.categoryBudgets[month]).length) delete state.categoryBudgets[month];
+            saveState();
+            syncCategoryBudgetInput();
+            renderAll();
+          });
+        });
       }
 
       function renderChart() {
@@ -1936,10 +2296,11 @@
         applyMobileMode(loadMobileModePreference());
         registerServiceWorker();
         renderAll();
+        syncBudgetInputWithSavedValue();
+        syncCategoryBudgetInput();
       }
 
       init();
-      syncBudgetInputWithSavedValue();
     })();
   </script>
 </body>
