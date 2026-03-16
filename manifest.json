@@ -1,0 +1,24 @@
+{
+  "name": "Budget Tracker",
+  "short_name": "Budget",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f8fafc",
+  "theme_color": "#0f172a",
+  "description": "An installable offline budget tracker that saves your data on your device.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect width='192' height='192' rx='36' fill='%230f172a'/%3E%3Crect x='24' y='32' width='144' height='128' rx='18' fill='%23ffffff'/%3E%3Cpath d='M48 74h96M48 100h62M48 126h40' stroke='%236366f1' stroke-width='12' stroke-linecap='round'/%3E%3Ccircle cx='136' cy='122' r='20' fill='%2310b981'/%3E%3Cpath d='M128 122h16' stroke='%23fff' stroke-width='8' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='96' fill='%230f172a'/%3E%3Crect x='64' y='86' width='384' height='340' rx='52' fill='%23ffffff'/%3E%3Cpath d='M128 196h256M128 266h166M128 336h106' stroke='%236366f1' stroke-width='28' stroke-linecap='round'/%3E%3Ccircle cx='368' cy='326' r='52' fill='%2310b981'/%3E%3Cpath d='M346 326h44' stroke='%23fff' stroke-width='18' stroke-linecap='round'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
