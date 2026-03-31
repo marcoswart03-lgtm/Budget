@@ -117,6 +117,33 @@
       white-space: nowrap;
     }
 
+    .hero-month-picker {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 210px;
+    }
+
+    .hero-month-picker label {
+      color: rgba(255,255,255,0.82);
+      font-size: 0.82rem;
+      font-weight: 700;
+      margin: 0;
+    }
+
+    .hero-month-picker input[type="month"] {
+      background: rgba(255,255,255,0.12);
+      color: white;
+      border: 1px solid rgba(255,255,255,0.16);
+      backdrop-filter: blur(4px);
+    }
+
+    .hero-month-picker input[type="month"]::-webkit-calendar-picker-indicator {
+      filter: invert(1);
+      opacity: 0.9;
+      cursor: pointer;
+    }
+
     .summary-grid {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -819,6 +846,7 @@
       .hero-actions { width: 100%; }
       .hero-badge { width: 100%; text-align: center; }
       .category-budget-head { flex-direction: column; align-items: stretch; }
+      .hero-month-picker { min-width: 100%; }
     }
 
     body.mobile-mode .app {
@@ -847,7 +875,8 @@
     }
 
     body.mobile-mode .hero-actions .btn,
-    body.mobile-mode .hero-badge {
+    body.mobile-mode .hero-badge,
+    body.mobile-mode .hero-month-picker {
       width: 100%;
     }
 
@@ -936,6 +965,12 @@
         <div class="hero-actions">
           <button type="button" class="btn btn-dark" id="mobileModeBtn">📱 Mobile Mode</button>
           <button type="button" class="btn btn-dark hidden" id="installBtn">⬇️ Install App</button>
+
+          <div class="hero-month-picker">
+            <label for="dashboardMonth">Dashboard Month</label>
+            <input type="month" id="dashboardMonth" />
+          </div>
+
           <div class="hero-badge" id="currentMonthBadge">Loading...</div>
           <div class="install-note" id="installNote">When served on HTTPS or localhost, you can install this app to your phone home screen.</div>
         </div>
@@ -1181,6 +1216,7 @@
 
       const els = {
         currentMonthBadge: document.getElementById("currentMonthBadge"),
+        dashboardMonth: document.getElementById("dashboardMonth"),
         totalIncome: document.getElementById("totalIncome"),
         totalExpenses: document.getElementById("totalExpenses"),
         balanceRemaining: document.getElementById("balanceRemaining"),
@@ -1467,10 +1503,17 @@
       }
 
       function setDefaults() {
+        const currentMonth = getCurrentMonthValue();
         els.date.value = getTodayISO();
-        els.filterMonth.value = getCurrentMonthValue();
-        els.budgetMonth.value = getCurrentMonthValue();
-        els.currentMonthBadge.textContent = "Current Month: " + monthNameFromValue(getCurrentMonthValue());
+        els.filterMonth.value = currentMonth;
+        els.budgetMonth.value = currentMonth;
+        els.dashboardMonth.value = currentMonth;
+        updateDashboardMonthLabel();
+      }
+
+      function updateDashboardMonthLabel() {
+        const month = els.dashboardMonth.value || getCurrentMonthValue();
+        els.currentMonthBadge.textContent = `Dashboard Month: ${monthNameFromValue(month)}`;
       }
 
       function bindEvents() {
@@ -1493,6 +1536,11 @@
         els.budgetMonth.addEventListener("input", () => {
           syncBudgetInputWithSavedValue();
           syncCategoryBudgetInput();
+        });
+
+        els.dashboardMonth.addEventListener("input", () => {
+          updateDashboardMonthLabel();
+          renderSummary();
         });
 
         els.categoryBudgetSelect.addEventListener("change", syncCategoryBudgetInput);
@@ -1679,6 +1727,10 @@
         return els.budgetMonth.value || getCurrentMonthValue();
       }
 
+      function getDashboardMonth() {
+        return els.dashboardMonth.value || getCurrentMonthValue();
+      }
+
       function getMonthCategoryBudget(month, category) {
         return safeNumber((state.categoryBudgets[month] || {})[category]);
       }
@@ -1783,6 +1835,12 @@
           .sort((a, b) => new Date(b.date) - new Date(a.date));
       }
 
+      function getTransactionsForMonth(monthValue) {
+        return state.transactions
+          .filter(tx => tx.date.slice(0, 7) === monthValue)
+          .sort((a, b) => new Date(b.date) - new Date(a.date));
+      }
+
       function getSummary(transactions) {
         let income = 0;
         let expenses = 0;
@@ -1841,8 +1899,11 @@
       }
 
       function renderSummary() {
-        const filtered = getFilteredTransactions();
-        const summary = getSummary(filtered);
+        const summaryMonth = getDashboardMonth();
+        const summaryTransactions = getTransactionsForMonth(summaryMonth);
+        const summary = getSummary(summaryTransactions);
+
+        updateDashboardMonthLabel();
 
         els.totalIncome.textContent = formatCurrency(summary.income);
         els.totalExpenses.textContent = formatCurrency(summary.expenses);
@@ -1854,9 +1915,11 @@
         else if (summary.balance < 0) els.balanceRemaining.classList.add("expense-color");
         else els.balanceRemaining.classList.add("balance-color");
 
+        const filtered = getFilteredTransactions();
         els.visibleCountChip.textContent = `${filtered.length} Transaction${filtered.length === 1 ? "" : "s"}`;
+
         const monthLabel = els.filterMonth.value ? monthNameFromValue(els.filterMonth.value) : "All Months";
-        els.tableSummaryChip.textContent = `View: ${monthLabel}`;
+        els.tableSummaryChip.textContent = `Table View: ${monthLabel}`;
       }
 
       function renderBudgetSection() {
