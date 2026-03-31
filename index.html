@@ -360,6 +360,10 @@
       gap: 12px;
     }
 
+    .budget-stats.secondary {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .mini-stat {
       padding: 14px;
       border-radius: 14px;
@@ -834,8 +838,10 @@
     @media (max-width: 760px) {
       .app { padding: 16px; }
       .hero { padding: 22px; }
-      .summary-grid { grid-template-columns: 1fr; }
-      .row-2, .budget-stats, .category-add-row, .category-budget-meta { grid-template-columns: 1fr; }
+      .summary-grid,
+      .budget-stats,
+      .budget-stats.secondary { grid-template-columns: 1fr; }
+      .row-2, .category-add-row, .category-budget-meta { grid-template-columns: 1fr; }
       .chart-row { grid-template-columns: 1fr; }
       .chart-value { justify-self: start; }
       .actions { flex-direction: column; }
@@ -884,6 +890,7 @@
     body.mobile-mode .main-grid,
     body.mobile-mode .row-2,
     body.mobile-mode .budget-stats,
+    body.mobile-mode .budget-stats.secondary,
     body.mobile-mode .category-add-row,
     body.mobile-mode .chart-row,
     body.mobile-mode .category-budget-meta {
@@ -1085,6 +1092,17 @@
               </div>
             </div>
 
+            <div class="budget-stats secondary">
+              <div class="mini-stat">
+                <div class="k">Total Category Budgets</div>
+                <div class="v" id="categoryBudgetTotal">R0.00</div>
+              </div>
+              <div class="mini-stat">
+                <div class="k">Left To Allocate</div>
+                <div class="v balance-color" id="categoryBudgetDifference">R0.00</div>
+              </div>
+            </div>
+
             <div class="budget-bar-wrap">
               <div class="budget-bar" id="budgetBar"></div>
             </div>
@@ -1239,6 +1257,8 @@
         budgetUsed: document.getElementById("budgetUsed"),
         budgetRemaining: document.getElementById("budgetRemaining"),
         budgetTarget: document.getElementById("budgetTarget"),
+        categoryBudgetTotal: document.getElementById("categoryBudgetTotal"),
+        categoryBudgetDifference: document.getElementById("categoryBudgetDifference"),
         budgetBar: document.getElementById("budgetBar"),
         budgetAlert: document.getElementById("budgetAlert"),
         categoryBudgetSelect: document.getElementById("categoryBudgetSelect"),
@@ -1735,6 +1755,11 @@
         return safeNumber((state.categoryBudgets[month] || {})[category]);
       }
 
+      function getCategoryBudgetTotal(month) {
+        const monthBudgets = state.categoryBudgets[month] || {};
+        return Object.values(monthBudgets).reduce((sum, value) => sum + safeNumber(value), 0);
+      }
+
       function saveBudget() {
         const month = getBudgetMonth();
         const limit = safeNumber(els.budgetLimit.value);
@@ -1925,6 +1950,8 @@
       function renderBudgetSection() {
         const month = getBudgetMonth();
         const info = getBudgetInfo(month);
+        const categoryBudgetTotal = getCategoryBudgetTotal(month);
+        const categoryBudgetDifference = info.budgetTarget - categoryBudgetTotal;
 
         if (document.activeElement !== els.budgetLimit) {
           els.budgetLimit.value = info.budgetTarget ? info.budgetTarget.toFixed(2) : "";
@@ -1933,6 +1960,17 @@
         els.budgetUsed.textContent = formatCurrency(info.monthExpenses);
         els.budgetRemaining.textContent = formatCurrency(info.remaining);
         els.budgetTarget.textContent = formatCurrency(info.budgetTarget);
+        els.categoryBudgetTotal.textContent = formatCurrency(categoryBudgetTotal);
+        els.categoryBudgetDifference.textContent = formatCurrency(categoryBudgetDifference);
+
+        els.categoryBudgetDifference.classList.remove("income-color", "expense-color", "warning-color", "balance-color");
+        if (categoryBudgetDifference > 0) {
+          els.categoryBudgetDifference.classList.add("income-color");
+        } else if (categoryBudgetDifference < 0) {
+          els.categoryBudgetDifference.classList.add("expense-color");
+        } else {
+          els.categoryBudgetDifference.classList.add("balance-color");
+        }
 
         const width = Math.min(info.percent, 100);
         els.budgetBar.style.width = `${Math.max(0, width)}%`;
